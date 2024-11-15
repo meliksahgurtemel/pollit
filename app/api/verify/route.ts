@@ -12,7 +12,39 @@ export async function POST(req: NextRequest) {
   try {
     const { payload, action, signal } = (await req.json()) as IRequestPayload
 
-    // Verify World ID proof
+    // First check if a user with this nullifier_hash already exists
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select()
+      .eq('nullifier_hash', payload.nullifier_hash)
+      .single()
+
+    // If user exists, just update last_login and return existing session
+    if (existingUser) {
+      await supabaseAdmin
+        .from('users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', existingUser.id)
+
+      // Create a new session for existing user
+      const { data: session, error: sessionError } = await supabaseAdmin.auth.admin.createUser({
+        user_metadata: {
+          world_id_nullifier: existingUser.nullifier_hash,
+          user_id: existingUser.id
+        }
+      })
+
+      if (sessionError) {
+        return NextResponse.json({ error: 'Session creation failed' }, { status: 500 })
+      }
+
+      return NextResponse.json({
+        user: existingUser,
+        session
+      })
+    }
+
+    // If no existing user, proceed with verification and new user creation
     const app_id = process.env.WORLD_APP_ID as `app_${string}`
     const verifyRes = await verifyCloudProof(payload, app_id, action, signal) as IVerifyResponse
 
@@ -20,7 +52,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid proof' }, { status: 400 })
     }
 
-    // Check if user exists or create new user
+    // Create new user
     const { data: user, error: upsertError } = await supabaseAdmin
       .from('users')
       .upsert({
@@ -35,7 +67,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
 
-    // Create a custom JWT token
+    // Create a session for new user
     const { data: token, error: tokenError } = await supabaseAdmin.auth.admin.createUser({
       user_metadata: {
         world_id_nullifier: payload.nullifier_hash,

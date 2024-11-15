@@ -1,60 +1,92 @@
-import HowItWorks from '@/components/HowItWorks';
-import Stats from '@/components/Stats';
-import Leaderboard from '@/components/Leaderboard';
-import { MiniKit,
-  VerifyCommandInput,
-  VerificationLevel,
-  ResponseEvent,
-  ISuccessResult,
-  MiniAppVerifyActionPayload
-} from '@worldcoin/minikit-js'
-import { useEffect } from 'react'
-
-
-const verifyPayload: VerifyCommandInput = {
-	action: 'sign-in',
-	signal: '',
-	verification_level: VerificationLevel.Device,
-}
-
-const payload = MiniKit.commands.verify(verifyPayload)
-
-useEffect(() => {
-	if (!MiniKit.isInstalled()) {
-		return
-	}
-
-	MiniKit.subscribe(ResponseEvent.MiniAppVerifyAction, async (response: MiniAppVerifyActionPayload) => {
-		if (response.status === 'error') {
-			return console.log('Error payload', response)
-		}
-
-		// Verify the proof in the backend
-		const verifyResponse = await fetch('/api/verify', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				payload: response as ISuccessResult,
-				action: 'sign-in',
-				signal: '',
-			}),
-		})
-
-		// TODO: Handle Success!
-		const verifyResponseJson = await verifyResponse.json()
-		if (verifyResponseJson.status === 200) {
-			console.log('Verification success!')
-		}
-	})
-
-	return () => {
-		MiniKit.unsubscribe(ResponseEvent.MiniAppVerifyAction)
-	}
-}, [])
+'use client'
+import { useEffect, useState } from 'react'
+import { supabaseClient } from '@/lib/supabase/client'
+import { MiniKit, VerifyCommandInput, VerificationLevel, ResponseEvent, ISuccessResult } from '@worldcoin/minikit-js'
+import HowItWorks from '@/components/HowItWorks'
+import Stats from '@/components/Stats'
+import Leaderboard from '@/components/Leaderboard'
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkSessionAndVerify = async () => {
+      try {
+        // Check if there's an active session
+        const { data: { session }, error } = await supabaseClient.auth.getSession()
+
+        if (error) throw error
+
+        if (!session) {
+          // No active session, proceed with World ID verification
+          if (!MiniKit.isInstalled()) {
+            console.error('World ID app not installed')
+            return
+          }
+
+          const verifyPayload: VerifyCommandInput = {
+            action: 'sign-in',
+            signal: '',
+            verification_level: VerificationLevel.Device,
+          }
+
+          // Trigger verification
+          MiniKit.commands.verify(verifyPayload)
+        }
+      } catch (error) {
+        console.error('Session check error:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkSessionAndVerify()
+
+    // Set up MiniKit listener
+    const handleVerification = async (response: any) => {
+      if (response.status === 'error') {
+        console.log('Error payload', response)
+        return
+      }
+
+      try {
+        const verifyResponse = await fetch('/api/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            payload: response as ISuccessResult,
+            action: 'sign-in',
+            signal: '',
+          }),
+        })
+
+        const data = await verifyResponse.json()
+
+        if (verifyResponse.ok) {
+          // Set the session in Supabase client
+          await supabaseClient.auth.setSession(data.session)
+          console.log('Verification success!')
+        } else {
+          console.error('Verification failed:', data.error)
+        }
+      } catch (error) {
+        console.error('Verification error:', error)
+      }
+    }
+
+    MiniKit.subscribe(ResponseEvent.MiniAppVerifyAction, handleVerification)
+
+    return () => {
+      MiniKit.unsubscribe(ResponseEvent.MiniAppVerifyAction)
+    }
+  }, [])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
   return (
     <div className="flex flex-col">
       {/* Header Section */}
@@ -89,5 +121,5 @@ export default function Home() {
       {/* Bottom spacing for nav */}
       <div className="h-24" />
     </div>
-  );
+  )
 }
