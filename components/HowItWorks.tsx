@@ -35,14 +35,11 @@ export default function HowItWorks() {
     const touchEnd = e.touches[0].clientX;
     const diff = touchStart - touchEnd;
 
-    // Minimum swipe distance of 50px
     if (Math.abs(diff) < 50) return;
 
     if (diff > 0) {
-      // Swipe left
       setCurrentStep((prev) => (prev === steps.length - 1 ? prev : prev + 1));
     } else {
-      // Swipe right
       setCurrentStep((prev) => (prev === 0 ? prev : prev - 1));
     }
 
@@ -63,7 +60,7 @@ export default function HowItWorks() {
           {steps.map((step, index) => (
             <div
               key={index}
-              className="w-full flex-shrink-0 px-4"
+              className="w-full flex-shrink-0 px-2"
             >
               <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6">
                 <div className="flex justify-center mb-4">

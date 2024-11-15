@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Header Section */}
-      <div className="px-4 py-6">
+      <div className="px-2 py-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -25,12 +25,9 @@ export default function Home() {
 
       {/* How It Works Section */}
       <div className="mt-4">
-        <h2 className="px-4 text-xl font-semibold mb-6">How it works</h2>
         <HowItWorks />
       </div>
-
-      {/* Space for additional content */}
-      <div className="h-24" /> {/* Safe area for bottom navigation */}
+      <div className="h-24" />
     </div>
   );
 }
