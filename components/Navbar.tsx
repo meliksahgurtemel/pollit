@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Trophy, User } from 'lucide-react';
+import { HomeIcon, CircleDollarSign, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -12,17 +12,17 @@ export default function BottomNav() {
     {
       name: 'Home',
       href: '/',
-      icon: Home,
+      icon: HomeIcon,
     },
     {
       name: 'Earn',
       href: '/earn',
-      icon: Trophy,
+      icon: CircleDollarSign,
     },
     {
       name: 'Profile',
       href: '/profile',
-      icon: User,
+      icon: UserCircle,
     },
   ];
 
