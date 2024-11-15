@@ -1,0 +1,12 @@
+this is a poll app where users can participate and earn tokens
+it is a next.js app with a tailwind css design
+it is a mobile first design
+the navigation is fixed at the bottom of the page and is visible on all pages
+please make the design as simple and clean as possible
+use black background and white text
+the theme should be modern, clean, and dark
+the design should be Gen Z focused
+please follow nextjs directory structure and best practices
+please use tailwind css for styling
+please create or use components for repeated ui elements
+please use lucide-react for icons
