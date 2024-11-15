@@ -8,6 +8,10 @@ import { cn } from '@/lib/utils';
 export default function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith('/earn/') && pathname !== '/earn') {
+    return null;
+  }
+
   const navItems = [
     {
       name: 'Home',

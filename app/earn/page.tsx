@@ -57,6 +57,7 @@ export default function EarnPage() {
           {activePolls.map((poll) => (
             <Poll
               key={poll.id}
+              id={poll.id}
               title={poll.title}
               participants={poll.participants}
               remainingTime={poll.remainingTime}

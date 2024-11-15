@@ -1,15 +1,20 @@
 import { Users, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface PollProps {
+  id: number;
   title: string;
   participants: number;
   remainingTime: string;
   reward: number;
 }
 
-export default function Poll({ title, participants, remainingTime, reward }: PollProps) {
+export default function Poll({ id, title, participants, remainingTime, reward }: PollProps) {
   return (
-    <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4">
+    <Link
+      href={`/earn/${id}`}
+      className="block bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 hover:bg-zinc-800/50 transition-colors"
+    >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h3 className="font-medium leading-tight">{title}</h3>
@@ -30,6 +35,6 @@ export default function Poll({ title, participants, remainingTime, reward }: Pol
           <span className="text-sm font-medium text-yellow-500">+{reward}</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
