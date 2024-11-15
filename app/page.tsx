@@ -1,5 +1,6 @@
 import HowItWorks from '@/components/HowItWorks';
 import Stats from '@/components/Stats';
+import Leaderboard from '@/components/Leaderboard';
 
 export default function Home() {
   return (
@@ -26,6 +27,11 @@ export default function Home() {
       {/* How It Works Section */}
       <div className="mt-3">
         <HowItWorks />
+      </div>
+
+      {/* Leaderboard Section */}
+      <div className="px-2 mt-8">
+        <Leaderboard />
       </div>
 
       {/* Bottom spacing for nav */}
