@@ -43,7 +43,9 @@ export default function EarnPage() {
     <div className="flex flex-col py-6">
       {/* Header */}
       <div className="px-2 mb-6">
-        <h1 className="text-2xl font-bold mb-2">Active Polls 🗳️</h1>
+        <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          Active Polls <span className="bounce">🗳️</span>
+        </h1>
         <p className="text-zinc-400">
           Participate in polls to earn tokens
         </p>
