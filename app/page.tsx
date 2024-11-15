@@ -1,6 +1,58 @@
 import HowItWorks from '@/components/HowItWorks';
 import Stats from '@/components/Stats';
 import Leaderboard from '@/components/Leaderboard';
+import { MiniKit,
+  VerifyCommandInput,
+  VerificationLevel,
+  ResponseEvent,
+  ISuccessResult,
+  MiniAppVerifyActionPayload
+} from '@worldcoin/minikit-js'
+import { useEffect } from 'react'
+
+
+const verifyPayload: VerifyCommandInput = {
+	action: 'sign-in',
+	signal: '',
+	verification_level: VerificationLevel.Device,
+}
+
+const payload = MiniKit.commands.verify(verifyPayload)
+
+useEffect(() => {
+	if (!MiniKit.isInstalled()) {
+		return
+	}
+
+	MiniKit.subscribe(ResponseEvent.MiniAppVerifyAction, async (response: MiniAppVerifyActionPayload) => {
+		if (response.status === 'error') {
+			return console.log('Error payload', response)
+		}
+
+		// Verify the proof in the backend
+		const verifyResponse = await fetch('/api/verify', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				payload: response as ISuccessResult,
+				action: 'sign-in',
+				signal: '',
+			}),
+		})
+
+		// TODO: Handle Success!
+		const verifyResponseJson = await verifyResponse.json()
+		if (verifyResponseJson.status === 200) {
+			console.log('Verification success!')
+		}
+	})
+
+	return () => {
+		MiniKit.unsubscribe(ResponseEvent.MiniAppVerifyAction)
+	}
+}, [])
 
 export default function Home() {
   return (
