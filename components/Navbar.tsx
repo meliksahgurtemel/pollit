@@ -37,7 +37,9 @@ export default function BottomNav() {
               href={item.href}
               className={cn(
                 'flex flex-col items-center justify-center flex-1 h-full transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                isActive
+                  ? 'text-white'
+                  : 'text-zinc-500 hover:text-zinc-300 transition-colors duration-200'
               )}
             >
               <item.icon className="w-5 h-5" />
