@@ -1,16 +1,36 @@
 import HowItWorks from '@/components/HowItWorks';
+import { Trophy } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="space-y-8 py-6">
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Welcome to PollIt</h1>
-        <p className="text-zinc-400">
-          Participate in polls, share your opinion, and earn rewards! 🚀
-        </p>
+    <div className="flex flex-col">
+      {/* Header Section */}
+      <div className="px-4 py-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              Hey there! <span className="wave">👋</span>
+            </h1>
+            <p className="text-lg text-zinc-400 mt-1">
+              Ready to earn some tokens?
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-full px-4 py-2">
+            <Trophy className="w-4 h-4 text-yellow-500" />
+            <span className="font-medium">2,450</span>
+          </div>
+        </div>
       </div>
 
-      <HowItWorks />
+      {/* How It Works Section */}
+      <div className="mt-4">
+        <h2 className="px-4 text-xl font-semibold mb-6">How it works</h2>
+        <HowItWorks />
+      </div>
+
+      {/* Space for additional content */}
+      <div className="h-24" /> {/* Safe area for bottom navigation */}
     </div>
   );
 }
