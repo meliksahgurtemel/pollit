@@ -1,69 +1,30 @@
 'use client';
 
-import { usePolls } from "@/hooks/usePolls";
+import { usePoll } from "@/hooks/usePoll";
 import { useUser } from "@/hooks/useUser";
 import { ArrowLeft, Coins, Timer, Users, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { toast } from "sonner";
-
-const calculateRemainingTime = (endsAt: any) => {
-  try {
-    const endDate = new Date(endsAt._seconds * 1000);
-    const now = new Date();
-    const distance = endDate.getTime() - now.getTime();
-
-    if (distance < 0) return '0h 0m';
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-
-    return days > 0
-      ? `${days}d ${hours}h`
-      : `${hours}h ${minutes}m`;
-  } catch (error) {
-    console.error('Error calculating remaining time:', error);
-    return '0h 0m';
-  }
-};
 
 export default function PollPage() {
   const { id } = useParams();
   const router = useRouter();
   const { session } = useFirebaseAuth();
-  const { polls, isLoading: pollsLoading, mutate: mutatePolls } = usePolls();
+  const { poll, remainingTime, totalVotes, isLoading: pollLoading, error: pollError } = usePoll(id as string);
   const { userStats, isLoading: userLoading, mutate: mutateUser } = useUser();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [remainingTime, setRemainingTime] = useState<string>('');
 
-  const poll = polls.find(p => p.id === id);
-  const totalVotes = poll?.options.reduce((sum, option) => sum + option.votes, 0) || 0;
-
-  useEffect(() => {
-    if (poll) {
-      // Initial calculation
-      setRemainingTime(calculateRemainingTime(poll.endsAt));
-
-      // Update remaining time every minute
-      const interval = setInterval(() => {
-        setRemainingTime(calculateRemainingTime(poll.endsAt));
-      }, 60000);
-
-      return () => clearInterval(interval);
-    }
-  }, [poll]);
-
-  if (pollsLoading || userLoading) {
+  if (pollLoading || userLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!poll) {
-    return <div>Poll not found</div>;
+  if (pollError || !poll) {
+    return <div>Error: {pollError || 'Poll not found'}</div>;
   }
 
   const handleSubmit = async () => {
@@ -84,7 +45,11 @@ export default function PollPage() {
         </div>
       );
 
-      await Promise.all([mutatePolls(), mutateUser()]);
+      await Promise.all([
+        mutateUser(),
+        router.refresh()
+      ]);
+
       router.push('/earn');
     } catch (error) {
       if (axios.isAxiosError(error)) {
