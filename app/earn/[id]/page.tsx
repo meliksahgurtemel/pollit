@@ -1,86 +1,98 @@
 'use client';
 
-import { ArrowLeft, Users, Clock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
-const pollData = {
-  id: 1,
-  title: "What's your favorite mobile payment app?",
-  participants: 1234,
-  remainingTime: "2h 15m",
-  reward: 50,
-  options: [
-    { id: 1, text: "PayPal", votes: 450 },
-    { id: 2, text: "Venmo", votes: 380 },
-    { id: 3, text: "Cash App", votes: 290 },
-    { id: 4, text: "Apple Pay", votes: 114 },
-  ]
-};
+import { usePolls } from "@/hooks/usePolls";
+import { useUser } from "@/hooks/useUser";
+import { ArrowLeft, Coins, Timer, Users } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 
 export default function PollPage() {
-  const router = useRouter();
+  const { id } = useParams();
+  const { polls, isLoading: pollsLoading } = usePolls();
+  const { updateUserStats, isLoading: userLoading } = useUser();
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const poll = polls.find(p => p.id.toString() === id);
+
+  if (pollsLoading || userLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!poll) {
+    return <div>Poll not found</div>;
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedOption) return;
+
+    try {
+      setIsSubmitting(true);
+      // Here you would typically make an API call to record the vote
+      // For now, we'll just update the user stats
+      await updateUserStats(poll.id.toString(), poll.reward);
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col py-6">
       {/* Header */}
-      <div className="sticky top-0 bg-black/50 backdrop-blur-lg border-b border-zinc-800 z-10">
-        <div className="px-2 py-4 flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-medium">Poll Details</h1>
-        </div>
-      </div>
+      <div className="px-2 mb-6">
+        <Link href="/earn" className="flex items-center gap-2 text-zinc-400 mb-4">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Polls
+        </Link>
 
-      {/* Poll Content */}
-      <div className="flex-1 px-2 py-6">
-        <div className="space-y-6">
-          {/* Poll Info */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3">{pollData.title}</h2>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="text-sm text-zinc-400">{pollData.participants}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="text-sm text-zinc-400">{pollData.remainingTime}</span>
-              </div>
-            </div>
+        <h1 className="text-2xl font-bold mb-4">{poll.title}</h1>
+
+        <div className="flex items-center gap-4 text-sm text-zinc-400">
+          <div className="flex items-center gap-1">
+            <Users className="w-4 h-4" />
+            <span>{poll.participants}</span>
           </div>
 
-          {/* Options */}
-          <div className="space-y-3">
-            {pollData.options.map((option) => (
-              <button
-                key={option.id}
-                className="w-full p-4 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl hover:bg-zinc-800/50 transition-colors text-left"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{option.text}</span>
-                  <span className="text-sm text-zinc-400">{option.votes} votes</span>
-                </div>
-              </button>
-            ))}
+          <div className="flex items-center gap-1">
+            <Timer className="w-4 h-4" />
+            <span>{poll.remainingTime}</span>
+          </div>
+
+          <div className="flex items-center gap-1 ml-auto text-yellow-500">
+            <Coins className="w-4 h-4" />
+            <span>{poll.reward}</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-2 bg-black/50 backdrop-blur-lg border-t border-zinc-800">
-        <div className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4">
-          <div>
-            <p className="text-sm text-zinc-400">Reward</p>
-            <p className="text-lg font-semibold text-yellow-500">+{pollData.reward} tokens</p>
-          </div>
-          <button className="bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-200 transition-colors">
-            Submit Vote
-          </button>
+      {/* Options */}
+      <div className="px-2">
+        <div className="space-y-3">
+          {poll.options.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => setSelectedOption(option.id.toString())}
+              className={`w-full p-4 rounded-xl border text-left transition-colors ${
+                selectedOption === option.id.toString()
+                  ? 'bg-blue-500/20 border-blue-500'
+                  : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900/70'
+              }`}
+            >
+              {option.text}
+            </button>
+          ))}
         </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={!selectedOption || isSubmitting}
+          className="w-full mt-6 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit Vote'}
+        </button>
       </div>
     </div>
   );
