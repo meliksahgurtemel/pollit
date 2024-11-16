@@ -2,16 +2,16 @@
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useProfile } from "@/hooks/useProfile";
-import { useLeaderboard } from "@/hooks/useLeaderboard";
+import { useUserRank } from "@/hooks/useUserRank";
 import { User2, Trophy, Coins, CheckCircle2 } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export default function ProfilePage() {
   const { uid } = useParams();
   const { profileData, isLoading: profileLoading, error: profileError } = useProfile(uid as string);
-  const { users, isLoading: leaderboardLoading } = useLeaderboard();
+  const { rank, isLoading: rankLoading } = useUserRank(uid as string);
 
-  if (profileLoading || leaderboardLoading) {
+  if (profileLoading || rankLoading) {
     return <LoadingSpinner />;
   }
 
@@ -19,14 +19,11 @@ export default function ProfilePage() {
     return <div>Error: {profileError || 'Profile not found'}</div>;
   }
 
-  // Find user's rank from leaderboard
-  const userRank = users.find(user => user.id === profileData.walletAddress)?.rank || '-';
-
   const stats = [
     {
       icon: Trophy,
       label: "Rank",
-      value: `#${userRank}`,
+      value: `#${rank || '-'}`,
       color: "text-yellow-500"
     },
     {
