@@ -48,7 +48,8 @@ export async function POST(request: Request) {
         ...poll,
         createdAt: new Date(),
         endsAt: new Date(poll.endsAt),
-        participants: 0,
+        totalParticipants: 0,
+        participants: [],
         options: poll.options.map((option: any) => ({
           ...option,
           votes: 0

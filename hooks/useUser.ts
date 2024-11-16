@@ -10,47 +10,47 @@ export function useUser() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!session?.user?.name) return;
+  const fetchUser = async () => {
+    if (!session?.user?.name) return;
 
-      try {
-        console.log('Fetching user:', session.user.name);
-        const userRef = doc(db, 'users', session.user.name);
-        const userSnap = await getDoc(userRef);
+    try {
+      setIsLoading(true);
+      const userRef = doc(db, 'users', session.user.name);
+      const userSnap = await getDoc(userRef);
 
-        if (!userSnap.exists()) {
-          // Create new user if doesn't exist
-          const newUser: Omit<User, 'id'> = {
-            tokensEarned: 0,
-            totalParticipations: 0,
-            participatedPolls: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+      if (!userSnap.exists()) {
+        // Create new user if doesn't exist
+        const newUser: Omit<User, 'id'> = {
+          tokensEarned: 0,
+          totalParticipations: 0,
+          participatedPolls: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
 
-          await setDoc(userRef, newUser);
-          setUserStats({
-            tokensEarned: 0,
-            totalParticipations: 0,
-            participatedPolls: 0,
-          });
-        } else {
-          const userData = userSnap.data() as Omit<User, 'id'>;
-          setUserStats({
-            tokensEarned: userData.tokensEarned,
-            totalParticipations: userData.totalParticipations,
-            participatedPolls: userData.participatedPolls.length,
-          });
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch user data');
-        console.error('Error fetching user:', err);
-      } finally {
-        setIsLoading(false);
+        await setDoc(userRef, newUser);
+        setUserStats({
+          tokensEarned: 0,
+          totalParticipations: 0,
+          participatedPolls: 0,
+        });
+      } else {
+        const userData = userSnap.data() as Omit<User, 'id'>;
+        setUserStats({
+          tokensEarned: userData.tokensEarned,
+          totalParticipations: userData.totalParticipations,
+          participatedPolls: userData.participatedPolls.length,
+        });
       }
-    };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user data');
+      console.error('Error fetching user:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUser();
   }, [session]);
 
@@ -82,5 +82,11 @@ export function useUser() {
     }
   };
 
-  return { userStats, isLoading, error, updateUserStats };
+  return {
+    userStats,
+    isLoading,
+    error,
+    updateUserStats,
+    mutate: fetchUser
+  };
 }

@@ -12,7 +12,7 @@ interface FirestoreTimestamp {
   export interface PollType {
     id: string;
     title: string;
-    participants: number;
+    totalParticipants: number;
     reward: number;
     remainingTime: string;
     createdAt: FirestoreTimestamp;

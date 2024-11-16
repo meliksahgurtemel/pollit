@@ -6,6 +6,7 @@ import MiniKitProvider from '@/components/MinikitProvider'
 import Navbar from '@/components/Navbar'
 import SessionProvider from '@/components/SessionProvider'
 import { getServerSession } from 'next-auth'
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -34,6 +35,7 @@ export default async function RootLayout({
             </SessionProvider>
           </MiniKitProvider>
         </ErudaProvider>
+        <Toaster />
       </body>
     </html>
   )

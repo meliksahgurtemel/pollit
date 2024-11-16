@@ -88,7 +88,7 @@ export default function EarnPage() {
                 key={poll.id}
                 id={poll.id}
                 title={poll.title}
-                participants={poll.participants}
+                totalParticipants={poll.totalParticipants}
                 remainingTime={poll.remainingTime}
                 reward={poll.reward}
               />

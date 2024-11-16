@@ -7,25 +7,26 @@ export function usePolls() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPolls = async () => {
-      try {
-        const { data } = await axios.get<PollType[]>('/api/polls');
-        setPolls(data);
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.error || 'Failed to fetch polls');
-        } else {
-          setError('Failed to fetch polls');
-        }
-        console.error('Error fetching polls:', err);
-      } finally {
-        setIsLoading(false);
+  const fetchPolls = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await axios.get<PollType[]>('/api/polls');
+      setPolls(data);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || 'Failed to fetch polls');
+      } else {
+        setError('Failed to fetch polls');
       }
-    };
+      console.error('Error fetching polls:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPolls();
   }, []);
 
-  return { polls, isLoading, error };
+  return { polls, isLoading, error, mutate: fetchPolls };
 }
