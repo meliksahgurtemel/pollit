@@ -1,12 +1,35 @@
 import { Trophy, Crown, Medal } from 'lucide-react';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import LoadingSpinner from './LoadingSpinner';
 
-const leaderboardData = [
-  { rank: 1, name: 'Alex Kim', points: '12,450', icon: Crown, iconColor: 'text-yellow-500' },
-  { rank: 2, name: 'Sarah Chen', points: '10,230', icon: Medal, iconColor: 'text-zinc-300' },
-  { rank: 3, name: 'Mike Johnson', points: '8,740', icon: Medal, iconColor: 'text-amber-600' },
-];
+const icons = {
+  Crown,
+  Medal
+};
 
 export default function Leaderboard() {
+  const { users, isLoading, error } = useLeaderboard();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[200px] flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-8 text-zinc-400">
+        No data available yet
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -15,25 +38,30 @@ export default function Leaderboard() {
       </div>
 
       <div className="space-y-3">
-        {leaderboardData.map((user) => (
-          <div
-            key={user.rank}
-            className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-800">
-                <user.icon className={`w-4 h-4 ${user.iconColor}`} />
+        {users.map((user) => {
+          const Icon = icons[user.icon];
+          return (
+            <div
+              key={user.rank}
+              className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-800">
+                  <Icon className={`w-4 h-4 ${user.iconColor}`} />
+                </div>
+                <div>
+                  <p className="font-medium">User #{user.id.slice(0, 6)}</p>
+                  <p className="text-sm text-zinc-400">
+                    {user.points.toLocaleString()} tokens
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">{user.name}</p>
-                <p className="text-sm text-zinc-400">{user.points} tokens</p>
+              <div className="text-sm font-medium text-zinc-400">
+                #{user.rank}
               </div>
             </div>
-            <div className="text-sm font-medium text-zinc-400">
-              #{user.rank}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

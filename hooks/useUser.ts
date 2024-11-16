@@ -3,11 +3,13 @@ import { User, UserStats } from "@/lib/types/user";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFirebaseAuth } from "./useFirebaseAuth";
+import { MiniKit, ResponseEvent } from "@worldcoin/minikit-js"
+import { useEffect } from "react";
 
-const fetchUser = async (username: string | null) => {
-  if (!username) return null;
+const fetchUser = async (userkey: string | null) => {
+  if (!userkey) return null;
 
-  const userRef = doc(db, 'users', username);
+  const userRef = doc(db, 'users', userkey);
   const userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
@@ -17,6 +19,9 @@ const fetchUser = async (username: string | null) => {
       participatedPolls: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      username: '',
+      walletAddress: '',
+      profilePictureUrl: '',
     };
 
     await setDoc(userRef, newUser);
@@ -31,9 +36,39 @@ export function useUser() {
   const { session } = useFirebaseAuth();
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    if (!session?.user?.name) return;
+
+    MiniKit.subscribe(ResponseEvent.MiniAppWalletAuth, async payload => {
+      if (payload.status === 'error') {
+        console.error('MiniKit auth error:', payload);
+        return;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['user', session?.user?.name] });
+    });
+
+    return () => {
+      MiniKit.unsubscribe(ResponseEvent.MiniAppWalletAuth);
+    };
+  }, [session?.user?.name, queryClient]);
+
   const { data: userStats, isLoading, error } = useQuery({
     queryKey: ['user', session?.user?.name],
-    queryFn: () => fetchUser(session?.user?.name ?? null),
+    queryFn: async () => {
+      const userData = await fetchUser(session?.user?.name ?? null);
+
+      if (MiniKit.user) {
+        return {
+          ...userData,
+          username: MiniKit.user.username,
+          walletAddress: MiniKit.user.walletAddress,
+          profilePictureUrl: MiniKit.user.profilePictureUrl,
+        };
+      }
+
+      return userData;
+    },
     enabled: !!session?.user?.name,
   });
 
@@ -58,7 +93,14 @@ export function useUser() {
   });
 
   return {
-    userStats: userStats || { tokensEarned: 0, totalParticipations: 0, participatedPolls: [] },
+    userStats: userStats || {
+      tokensEarned: 0,
+      totalParticipations: 0,
+      participatedPolls: [],
+      username: '',
+      walletAddress: '',
+      profilePictureUrl: '',
+    },
     isLoading,
     error: error ? String(error) : null,
     updateUserStats: updateUserStatsMutation.mutate,

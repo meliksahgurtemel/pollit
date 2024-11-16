@@ -4,9 +4,11 @@ import HowItWorks from '@/components/HowItWorks'
 import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
+import { useUser } from '@/hooks/useUser'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function Home() {
+  const { userStats } = useUser()
   const { isLoading, error } = useFirebaseAuth()
 
   if (isLoading) {
@@ -24,7 +26,7 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              Hey there! <span className="wave">👋</span>
+              Hey {userStats.username ? userStats.username : 'there'}! <span className="wave">👋</span>
             </h1>
             <p className="text-lg text-zinc-400 mt-1">
               Ready to earn some tokens?

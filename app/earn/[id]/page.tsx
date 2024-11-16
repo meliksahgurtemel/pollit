@@ -12,6 +12,10 @@ import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { toast } from "sonner";
 import LoadingSpinner from '@/components/LoadingSpinner';
 
+interface UserStats {
+  participatedPolls: string[];
+}
+
 export default function PollPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -32,7 +36,7 @@ export default function PollPage() {
     isLoading: userLoading,
     mutate: mutateUser,
     isLoading: pollsLoading,
-  } = useUser();
+  } = useUser() as { userStats: UserStats | null, isLoading: boolean, mutate: () => void };
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
