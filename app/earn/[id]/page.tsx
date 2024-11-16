@@ -2,13 +2,34 @@
 
 import { usePolls } from "@/hooks/usePolls";
 import { useUser } from "@/hooks/useUser";
-import { ArrowLeft, Coins, Timer, Users } from "lucide-react";
+import { ArrowLeft, Coins, Timer, Users, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { toast } from "sonner";
+
+const calculateRemainingTime = (endsAt: any) => {
+  try {
+    const endDate = new Date(endsAt._seconds * 1000);
+    const now = new Date();
+    const distance = endDate.getTime() - now.getTime();
+
+    if (distance < 0) return '0h 0m';
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+    return days > 0
+      ? `${days}d ${hours}h`
+      : `${hours}h ${minutes}m`;
+  } catch (error) {
+    console.error('Error calculating remaining time:', error);
+    return '0h 0m';
+  }
+};
 
 export default function PollPage() {
   const { id } = useParams();
@@ -18,8 +39,24 @@ export default function PollPage() {
   const { userStats, isLoading: userLoading, mutate: mutateUser } = useUser();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [remainingTime, setRemainingTime] = useState<string>('');
 
   const poll = polls.find(p => p.id === id);
+  const totalVotes = poll?.options.reduce((sum, option) => sum + option.votes, 0) || 0;
+
+  useEffect(() => {
+    if (poll) {
+      // Initial calculation
+      setRemainingTime(calculateRemainingTime(poll.endsAt));
+
+      // Update remaining time every minute
+      const interval = setInterval(() => {
+        setRemainingTime(calculateRemainingTime(poll.endsAt));
+      }, 60000);
+
+      return () => clearInterval(interval);
+    }
+  }, [poll]);
 
   if (pollsLoading || userLoading) {
     return <div>Loading...</div>;
@@ -41,17 +78,13 @@ export default function PollPage() {
         userId: session.user.name
       });
 
-      // Show success message with styled token amount
       toast.success(
         <div>
           You earned <span className="text-yellow-500">{poll.reward} tokens</span>!
         </div>
       );
 
-      // Refresh polls and user data
       await Promise.all([mutatePolls(), mutateUser()]);
-
-      // Redirect to earn page
       router.push('/earn');
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -64,6 +97,8 @@ export default function PollPage() {
       setIsSubmitting(false);
     }
   };
+
+  const hasParticipated = userStats?.participatedPolls.includes(poll.id);
 
   return (
     <div className="flex flex-col py-6">
@@ -84,7 +119,7 @@ export default function PollPage() {
 
           <div className="flex items-center gap-1">
             <Timer className="w-4 h-4" />
-            <span>{poll.remainingTime}</span>
+            <span>{remainingTime}</span>
           </div>
 
           <div className="flex items-center gap-1 ml-auto text-yellow-500">
@@ -100,25 +135,43 @@ export default function PollPage() {
           {poll.options.map((option) => (
             <button
               key={option.id}
-              onClick={() => setSelectedOption(option.id)}
-              className={`w-full p-4 rounded-xl border text-left transition-colors ${
+              onClick={() => !hasParticipated && setSelectedOption(option.id)}
+              disabled={hasParticipated}
+              className={`w-full p-4 rounded-xl border text-left transition-colors relative ${
                 selectedOption === option.id
                   ? 'bg-blue-500/20 border-blue-500'
+                  : hasParticipated
+                  ? 'bg-zinc-900/50 border-zinc-800'
                   : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900/70'
               }`}
             >
-              {option.text}
+              <div className="flex justify-between items-center">
+                <span>{option.text}</span>
+                {hasParticipated && (
+                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                    <BarChart2 className="w-4 h-4" />
+                    <span>{((option.votes / totalVotes) * 100).toFixed(1)}%</span>
+                  </div>
+                )}
+              </div>
+              {hasParticipated && (
+                <div className="absolute left-0 top-0 h-full bg-blue-500/10 rounded-xl"
+                  style={{ width: `${(option.votes / totalVotes) * 100}%` }}
+                />
+              )}
             </button>
           ))}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedOption || isSubmitting}
-          className="w-full mt-6 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Vote'}
-        </button>
+        {!hasParticipated && (
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedOption || isSubmitting}
+            className="w-full mt-6 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Vote'}
+          </button>
+        )}
       </div>
     </div>
   );
