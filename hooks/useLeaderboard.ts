@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface LeaderboardUser {
   rank: number;
@@ -15,15 +15,18 @@ const fetchLeaderboard = async () => {
 };
 
 export function useLeaderboard() {
+  const queryClient = useQueryClient();
+
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: fetchLeaderboard,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   });
 
   return {
     users: users || [],
     isLoading,
-    error: error ? String(error) : null
+    error: error ? String(error) : null,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
   };
 }

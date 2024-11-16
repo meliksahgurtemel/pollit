@@ -11,6 +11,7 @@ import axios from "axios";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { toast } from "sonner";
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useLeaderboard } from "@/hooks/useLeaderboard";
 
 interface UserStats {
   participatedPolls: string[];
@@ -20,6 +21,8 @@ export default function PollPage() {
   const { id } = useParams();
   const router = useRouter();
   const { session } = useFirebaseAuth();
+  const { refresh: refreshPolls } = usePolls();
+  const { refresh: refreshLeaderboard } = useLeaderboard();
   const {
     poll,
     remainingTime,
@@ -28,9 +31,6 @@ export default function PollPage() {
     error: pollError,
     refresh: refreshPoll
   } = usePoll(id as string);
-  const {
-    refresh: refreshPolls
-  } = usePolls();
   const {
     userStats,
     isLoading: userLoading,
@@ -70,6 +70,7 @@ export default function PollPage() {
         mutateUser(),
         refreshPoll(),
         refreshPolls(),
+        refreshLeaderboard(),
         router.refresh()
       ]);
     } catch (error) {
