@@ -3,7 +3,6 @@ import { useUser } from '@/hooks/useUser';
 
 export default function Stats() {
   const { userStats } = useUser();
-
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4">

@@ -21,17 +21,17 @@ export function useFirebaseAuth() {
       setIsSessionLoading(false);
 
       try {
-        // Check if already authenticated with Firebase
-        if (auth.currentUser) {
-          console.log('Already authenticated with Firebase', auth.currentUser.uid);
-          setIsLoading(false);
-          return;
-        }
-
         // Only attempt sign in if no session
         if (!session?.user) {
           console.log('No session, initiating Worldcoin sign in');
           await signIn('worldcoin');
+          return;
+        }
+
+        // Check if already authenticated with Firebase
+        if (auth.currentUser) {
+          console.log('Already authenticated with Firebase', auth.currentUser.uid);
+          setIsLoading(false);
           return;
         }
 
