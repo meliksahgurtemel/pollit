@@ -6,7 +6,7 @@ import MiniKitProvider from '@/components/MinikitProvider'
 import Navbar from '@/components/Navbar'
 import SessionProvider from '@/components/SessionProvider'
 import { getServerSession } from 'next-auth'
-import { Toaster } from 'sonner';
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -35,7 +35,18 @@ export default async function RootLayout({
             </SessionProvider>
           </MiniKitProvider>
         </ErudaProvider>
-        <Toaster />
+        <Toaster
+          theme="dark"
+          position="top-center"
+          duration={5000}
+          toastOptions={{
+            style: {
+              background: 'rgb(9, 9, 11)',
+              border: '1px solid rgb(39, 39, 42)',
+              color: 'white',
+            },
+          }}
+        />
       </body>
     </html>
   )

@@ -32,14 +32,14 @@ export function useUser() {
         setUserStats({
           tokensEarned: 0,
           totalParticipations: 0,
-          participatedPolls: 0,
+          participatedPolls: [],
         });
       } else {
         const userData = userSnap.data() as Omit<User, 'id'>;
         setUserStats({
           tokensEarned: userData.tokensEarned,
           totalParticipations: userData.totalParticipations,
-          participatedPolls: userData.participatedPolls.length,
+          participatedPolls: userData.participatedPolls,
         });
       }
     } catch (err) {
@@ -54,39 +54,38 @@ export function useUser() {
     fetchUser();
   }, [session]);
 
-  const updateUserStats = async (pollId: string, tokensEarned: number) => {
-    if (!session?.user?.name) return;
+  // const updateUserStats = async (pollId: string, tokensEarned: number) => {
+  //   if (!session?.user?.name) return;
 
-    try {
-      const userRef = doc(db, 'users', session.user.name);
-      const userSnap = await getDoc(userRef);
-      const userData = userSnap.data() as Omit<User, 'id'>;
+  //   try {
+  //     const userRef = doc(db, 'users', session.user.name);
+  //     const userSnap = await getDoc(userRef);
+  //     const userData = userSnap.data() as Omit<User, 'id'>;
 
-      await updateDoc(userRef, {
-        tokensEarned: userData.tokensEarned + tokensEarned,
-        totalParticipations: userData.totalParticipations + 1,
-        participatedPolls: [...userData.participatedPolls, pollId],
-        updatedAt: new Date(),
-      });
+  //     await updateDoc(userRef, {
+  //       tokensEarned: userData.tokensEarned + tokensEarned,
+  //       totalParticipations: userData.totalParticipations + 1,
+  //       participatedPolls: [...userData.participatedPolls, pollId],
+  //       updatedAt: new Date(),
+  //     });
 
-      // Update local stats
-      setUserStats(prev => prev ? {
-        ...prev,
-        tokensEarned: prev.tokensEarned + tokensEarned,
-        totalParticipations: prev.totalParticipations + 1,
-        participatedPolls: prev.participatedPolls + 1,
-      } : null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user stats');
-      console.error('Error updating user stats:', err);
-    }
-  };
+  //     // Update local stats
+  //     setUserStats(prev => prev ? {
+  //       ...prev,
+  //       tokensEarned: prev.tokensEarned + tokensEarned,
+  //       totalParticipations: prev.totalParticipations + 1,
+  //       participatedPolls: prev.participatedPolls + 1,
+  //     } : null);
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : 'Failed to update user stats');
+  //     console.error('Error updating user stats:', err);
+  //   }
+  // };
 
   return {
     userStats,
     isLoading,
     error,
-    updateUserStats,
     mutate: fetchUser
   };
 }

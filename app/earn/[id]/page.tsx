@@ -41,8 +41,12 @@ export default function PollPage() {
         userId: session.user.name
       });
 
-      // Show success message
-      toast.success(`You earned ${poll.reward} tokens!`);
+      // Show success message with styled token amount
+      toast.success(
+        <div>
+          You earned <span className="text-yellow-500">{poll.reward} tokens</span>!
+        </div>
+      );
 
       // Refresh polls and user data
       await Promise.all([mutatePolls(), mutateUser()]);

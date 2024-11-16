@@ -2,16 +2,17 @@
 
 import Poll from '@/components/Poll';
 import { usePolls } from '@/hooks/usePolls';
+import { useUser } from '@/hooks/useUser';
 import { useEffect, useState } from 'react';
 import { PollType } from '@/lib/types/poll';
 
 interface PollWithRemainingTime extends PollType {
   remainingTime: string;
+  hasParticipated?: boolean;
 }
 
 const calculateRemainingTime = (endsAt: any) => {
   try {
-    // Convert Firestore Timestamp to Date
     const endDate = new Date(endsAt._seconds * 1000);
     const now = new Date();
     const distance = endDate.getTime() - now.getTime();
@@ -32,16 +33,18 @@ const calculateRemainingTime = (endsAt: any) => {
 };
 
 export default function EarnPage() {
-  const { polls, isLoading, error } = usePolls();
+  const { polls, isLoading: pollsLoading, error: pollsError } = usePolls();
+  const { userStats, isLoading: userLoading, error: userError } = useUser();
   const [pollsWithTime, setPollsWithTime] = useState<PollWithRemainingTime[]>([]);
 
   useEffect(() => {
-    if (!polls) return;
+    if (!polls || !userStats) return;
 
     // Initial calculation
     const withTime = polls.map(poll => ({
       ...poll,
-      remainingTime: calculateRemainingTime(poll.endsAt)
+      remainingTime: calculateRemainingTime(poll.endsAt),
+      hasParticipated: userStats.participatedPolls.includes(poll.id)
     }));
     setPollsWithTime(withTime);
 
@@ -56,14 +59,14 @@ export default function EarnPage() {
     }, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [polls]);
+  }, [polls, userStats]);
 
-  if (isLoading) {
+  if (pollsLoading || userLoading) {
     return <div>Loading polls...</div>;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (pollsError || userError) {
+    return <div>Error: {pollsError || userError}</div>;
   }
 
   return (
@@ -80,7 +83,7 @@ export default function EarnPage() {
 
       {/* Polls List */}
       <div className="px-2">
-        <div className="flex flex-col space-y-3">
+        <div className="flex flex-col space-y-4">
           {pollsWithTime
             .filter(poll => poll.remainingTime !== '0h 0m')
             .map((poll) => (
@@ -91,6 +94,7 @@ export default function EarnPage() {
                 totalParticipants={poll.totalParticipants}
                 remainingTime={poll.remainingTime}
                 reward={poll.reward}
+                hasParticipated={poll.hasParticipated}
               />
             ))}
         </div>

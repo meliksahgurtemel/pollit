@@ -10,5 +10,5 @@ export interface User {
 export interface UserStats {
   tokensEarned: number;
   totalParticipations: number;
-  participatedPolls: number;
+  participatedPolls: string[];
 }
