@@ -1,6 +1,6 @@
 import { PollType } from "@/lib/types/poll";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { calculateRemainingTime } from "@/lib/utils";
 
 interface PollDetails {
@@ -15,6 +15,8 @@ const fetchPoll = async (id: string) => {
 };
 
 export function usePoll(id: string) {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['poll', id],
     queryFn: () => fetchPoll(id),
@@ -33,5 +35,6 @@ export function usePoll(id: string) {
     totalVotes: data?.totalVotes ?? 0,
     isLoading,
     error: error ? String(error) : null,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ['poll', id] })
   };
 }

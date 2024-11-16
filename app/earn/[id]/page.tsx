@@ -1,6 +1,7 @@
 'use client';
 
 import { usePoll } from "@/hooks/usePoll";
+import { usePolls } from "@/hooks/usePolls";
 import { useUser } from "@/hooks/useUser";
 import { ArrowLeft, Coins, Timer, Users, BarChart2 } from "lucide-react";
 import Link from "next/link";
@@ -14,12 +15,27 @@ export default function PollPage() {
   const { id } = useParams();
   const router = useRouter();
   const { session } = useFirebaseAuth();
-  const { poll, remainingTime, totalVotes, isLoading: pollLoading, error: pollError } = usePoll(id as string);
-  const { userStats, isLoading: userLoading, mutate: mutateUser } = useUser();
+  const {
+    poll,
+    remainingTime,
+    totalVotes,
+    isLoading: pollLoading,
+    error: pollError,
+    refresh: refreshPoll
+  } = usePoll(id as string);
+  const {
+    refresh: refreshPolls
+  } = usePolls();
+  const {
+    userStats,
+    isLoading: userLoading,
+    mutate: mutateUser,
+    isLoading: pollsLoading,
+  } = useUser();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (pollLoading || userLoading) {
+  if (pollLoading || userLoading || pollsLoading) {
     return <div>Loading...</div>;
   }
 
@@ -47,6 +63,8 @@ export default function PollPage() {
 
       await Promise.all([
         mutateUser(),
+        refreshPoll(),
+        refreshPolls(),
         router.refresh()
       ]);
 

@@ -1,7 +1,7 @@
 import type { PollType } from "@/lib/types/poll";
 import { calculateRemainingTime } from "@/lib/utils";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface PollWithStatus extends PollType {
   remainingTime: string;
@@ -14,6 +14,8 @@ const fetchPolls = async () => {
 };
 
 export function usePolls(participatedPolls?: string[]) {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['polls', participatedPolls],
     queryFn: fetchPolls,
@@ -33,5 +35,6 @@ export function usePolls(participatedPolls?: string[]) {
     polls: data || [],
     isLoading,
     error: error ? String(error) : null,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ['polls'] })
   };
 }
