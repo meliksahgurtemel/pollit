@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
 
       // Create a new session for existing user
       const { data: session, error: sessionError } = await supabaseAdmin.auth.admin.createUser({
+        email: `${existingUser.id}@worldcoin.fake`,
+        email_confirm: false,
         user_metadata: {
           world_id_nullifier: existingUser.nullifier_hash,
           user_id: existingUser.id
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
       })
 
       if (sessionError) {
-        return NextResponse.json({ error: 'Session creation failed' }, { status: 500 })
+        return NextResponse.json({ error: 'Session creation failed:' + sessionError.message }, { status: 500 })
       }
 
       return NextResponse.json({
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
     const verifyRes = await verifyCloudProof(payload, app_id, action, signal) as IVerifyResponse
 
     if (!verifyRes.success) {
-      return NextResponse.json({ error: 'Invalid proof' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid proof:' + verifyRes.detail }, { status: 400 })
     }
 
     // Create new user
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (tokenError) {
-      return NextResponse.json({ error: 'Token creation failed' }, { status: 500 })
+      return NextResponse.json({ error: 'Token creation failed:' + tokenError.message }, { status: 500 })
     }
 
     return NextResponse.json({
