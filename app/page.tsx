@@ -17,11 +17,11 @@ export default function Home() {
     }
 
     const handleSignIn = async () => {
-      if (status === 'unauthenticated') {
+      if (!session?.user && !isLoading) {
         try {
           await signIn('worldcoin')
-      } catch (error) {
-        console.error('Sign in error:', error)
+        } catch (error) {
+          console.error('Sign in error:', error)
         }
       }
     }
