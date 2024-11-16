@@ -1,6 +1,7 @@
 'use client'
 
 import Poll from '@/components/Poll';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { usePolls } from '@/hooks/usePolls';
 import { useUser } from '@/hooks/useUser';
 
@@ -17,11 +18,10 @@ export default function EarnPage() {
   } = usePolls(userStats?.participatedPolls);
 
   if (pollsLoading || userLoading) {
-    return <div>Loading polls...</div>;
+    return <LoadingSpinner />;
   }
 
   if (pollsError || userError) {
-    console.log("EarnPage error bro", pollsError);
     return <div>Error: {String(pollsError || userError)}</div>;
   }
 

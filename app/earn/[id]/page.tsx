@@ -10,6 +10,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { toast } from "sonner";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function PollPage() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function PollPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (pollLoading || userLoading || pollsLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   if (pollError || !poll) {
@@ -122,7 +123,7 @@ export default function PollPage() {
               disabled={hasParticipated}
               className={`w-full p-4 rounded-xl border text-left transition-colors relative ${
                 selectedOption === option.id
-                  ? 'bg-blue-500/20 border-blue-500'
+                  ? 'bg-yellow-100/20 border-yellow-500'
                   : hasParticipated
                   ? 'bg-zinc-900/50 border-zinc-800'
                   : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900/70'
@@ -150,7 +151,7 @@ export default function PollPage() {
           <button
             onClick={handleSubmit}
             disabled={!selectedOption || isSubmitting}
-            className="w-full mt-6 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-6 py-3 px-4 rounded-xl bg-yellow-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Submitting...' : 'Submit Vote'}
           </button>
