@@ -15,6 +15,7 @@ export function useUser() {
       if (!session?.user?.name) return;
 
       try {
+        console.log('Fetching user:', session.user.name);
         const userRef = doc(db, 'users', session.user.name);
         const userSnap = await getDoc(userRef);
 

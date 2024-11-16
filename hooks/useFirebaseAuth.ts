@@ -23,7 +23,7 @@ export function useFirebaseAuth() {
       try {
         // Check if already authenticated with Firebase
         if (auth.currentUser) {
-          console.log('Already authenticated with Firebase');
+          console.log('Already authenticated with Firebase', auth.currentUser.uid);
           setIsLoading(false);
           return;
         }
