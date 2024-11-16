@@ -72,8 +72,6 @@ export default function PollPage() {
         refreshPolls(),
         router.refresh()
       ]);
-
-      router.push('/earn');
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.error || 'Failed to submit vote');

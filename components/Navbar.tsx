@@ -4,9 +4,11 @@ import { HomeIcon, CircleDollarSign, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { session } = useFirebaseAuth();
 
   if (pathname?.startsWith('/earn/') && pathname !== '/earn') {
     return null;
@@ -25,7 +27,7 @@ export default function BottomNav() {
     },
     {
       name: 'Profile',
-      href: '/profile',
+      href: session?.user?.name ? `/profile/${session.user.name}` : '/profile',
       icon: UserCircle,
     },
   ];
@@ -34,7 +36,8 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 border-t border-zinc-800 safe-area-pb">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href ||
+            (item.name === 'Profile' && pathname?.startsWith('/profile/'));
           return (
             <Link
               key={item.name}
