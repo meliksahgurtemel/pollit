@@ -3,7 +3,7 @@
 import HowItWorks from '@/components/HowItWorks'
 import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
-import { useFirebaseAuth } from '@/lib/hooks/useFirebaseAuth'
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
 
 export default function Home() {
   const { isLoading, error } = useFirebaseAuth()

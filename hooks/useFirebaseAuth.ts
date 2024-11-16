@@ -6,25 +6,38 @@ import axios from "axios";
 
 export function useFirebaseAuth() {
   const { data: session, status } = useSession();
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuth = async () => {
-      // Handle initial loading state
-      if (status === 'loading') return;
+      // Skip if still loading
+      if (status === 'loading') {
+        console.log('Still loading session...');
+        return;
+      }
+
+      setIsSessionLoading(false);
 
       try {
-        // If no session, attempt Worldcoin sign in
-        if (!session?.user) {
-          await signIn('worldcoin', {
-            redirect: false,
-          });
+        // Check if already authenticated with Firebase
+        if (auth.currentUser) {
+          console.log('Already authenticated with Firebase');
+          setIsLoading(false);
           return;
         }
 
-        // If we have a session, proceed with Firebase auth
+        // Only attempt sign in if no session
+        if (!session?.user) {
+          console.log('No session, initiating Worldcoin sign in');
+          await signIn('worldcoin');
+          return;
+        }
+
+        // Proceed with Firebase auth only if not already authenticated
         if (session.user.name) {
+          console.log('Creating Firebase token');
           const { data } = await axios.post('/api/auth/createToken', {
             uid: session.user.name
           });
