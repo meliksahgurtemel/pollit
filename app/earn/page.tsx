@@ -5,7 +5,11 @@ import { usePolls } from '@/hooks/usePolls';
 import { useUser } from '@/hooks/useUser';
 
 export default function EarnPage() {
-  const { userStats, isLoading: userLoading, error: userError } = useUser();
+  const {
+    userStats,
+    isLoading: userLoading,
+    error: userError
+  } = useUser();
   const {
     polls,
     isLoading: pollsLoading,
@@ -17,7 +21,8 @@ export default function EarnPage() {
   }
 
   if (pollsError || userError) {
-    return <div>Error: {pollsError || userError}</div>;
+    console.log("EarnPage error bro", pollsError);
+    return <div>Error: {String(pollsError || userError)}</div>;
   }
 
   return (
