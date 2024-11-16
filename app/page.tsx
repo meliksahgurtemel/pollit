@@ -1,36 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSession, signIn } from "next-auth/react"
 import HowItWorks from '@/components/HowItWorks'
 import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
+import { useFirebaseAuth } from '@/lib/hooks/useFirebaseAuth'
 
 export default function Home() {
-  const { data: session, status } = useSession()
-  const [isLoading, setIsLoading] = useState(true)
-  console.log(session)
+  const { isLoading, error } = useFirebaseAuth()
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      setIsLoading(false)
-    }
-
-    const handleSignIn = async () => {
-      if (!session?.user && !isLoading) {
-        try {
-          await signIn('worldcoin')
-        } catch (error) {
-          console.error('Sign in error:', error)
-        }
-      }
-    }
-
-    handleSignIn()
-  }, [status])
-
-  if (status === 'loading' || isLoading) {
+  if (isLoading) {
     return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
   }
 
   return (
